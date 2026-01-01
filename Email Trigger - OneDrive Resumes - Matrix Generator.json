@@ -1,0 +1,362 @@
+{
+  "name": "Email Trigger - OneDrive Resumes - Matrix Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "readStatus": "unread"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTrigger",
+      "typeVersion": 1,
+      "position": [
+        -976,
+        -464
+      ],
+      "id": "f5f1e039-9568-4566-bc30-40bef4411d9a",
+      "name": "Microsoft Outlook Trigger",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "w0pNpODcl8qcLp6Z",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "**Email sender will trigger the resumes in sharepoint to be converted to Matrix and mailed back to them**\n\nHow does it work:\n1. User uploads resume to OneDrive Folder.\n2. Now user will send an email with subject as \"CM\".\n3. That will trigger the file downloader node.\n4. File Downloader node pushes the files into AI and then output comes in the form of JSON.\n5. JSON is first cleaned with JS node.\n6. Then cleaned response is converted to CSV file.\n7. CSV file is now sent back to the user.\n\n \n\n\n\n",
+        "height": 336,
+        "width": 496
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -320,
+        -880
+      ],
+      "typeVersion": 1,
+      "id": "c09d756a-0316-436a-bc12-e4b545dafeb9",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0db38a76-6b69-495b-b40a-3d2e72fa0db6",
+              "leftValue": "={{ $json.subject }}",
+              "rightValue": "=CM",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -736,
+        -464
+      ],
+      "id": "9a20a90f-2389-4e07-9b86-de23567a7532",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $json.from }}",
+        "subject": "=Replying to Subject: \"{{ $json.subject }}\"",
+        "bodyContent": "Request received. Please sit tight",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        -480
+      ],
+      "id": "c32957c7-e8f3-4c99-b0ed-fa520a6b20a0",
+      "name": "Send Acknowledgement Email",
+      "webhookId": "134de789-6ddf-4f8a-be9a-35c9dbf394cc",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "w0pNpODcl8qcLp6Z",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "folderId": "B9E18DDEE399C1A1!sef87a27f70bc4cbcbc77bae3f5dd0fad"
+      },
+      "type": "n8n-nodes-base.microsoftOneDrive",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        -480
+      ],
+      "id": "86f85071-d7dd-48d4-a6cd-9243e0bec127",
+      "name": "Fetch Resume from OD - Folder",
+      "credentials": {
+        "microsoftOneDriveOAuth2Api": {
+          "id": "kcSBp4oO23H4akgH",
+          "name": "Microsoft Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileUrl": "={{ $json['@microsoft.graph.downloadUrl'] }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -480
+      ],
+      "id": "b4467f68-6036-4058-aa04-591a6fd70813",
+      "name": "Upload Files - Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Ljao62dZBMdAXYlb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "You are a highly precise, detail-oriented resume parser for an HR candidate matrix generator. Your sole function is to extract structured data from the provided documents (resume and cover letter).\n\n**STRICT OUTPUT INSTRUCTIONS:**\n1.  **FORMAT:** Output must be a single block of plain text in valid JSON syntax. **DO NOT** use a code block (```json) or any other markdown formatting.\n2.  **PRECISION:** Match the pattern strictly. **DO NOT** add any extra characters (spaces, newlines, or text) before the opening curly brace `{` or after the closing curly brace `}`.\n3.  **FIELDS:** Populate the following fields exactly, using the cover letter as the primary source for contact details if available, and the resume for professional history:\n    * `Name`: Full name of the candidate.\n    * `Email address`: Candidate's email address.\n    * `Mobile Number`: Candidate's mobile phone number.\n    * `qualifications`: List all formal qualifications, certifications, degrees, and professional credentials, including all associated dates or years.\n    * `career_history`: List all employment positions with the format: \"Company Name - Role Title - Dates\". Use start and end dates/years from the resume.\n\n**Example Output Template (Strictly adhere to this field order and format):**\n{\n\"Name\": \"John Doe\",\n\"Email address\": \"example@xyz.com\",\n\"Mobile Number\": \"04xxxxx\",\n\"qualifications\": [\n\"Qualification Name (Year/Date)\",\n\"Degree, University, (Start Year - End Year)\",\n...\n],\n\"career_history\": [\n\"Company Name - Role Title - (Start Month Year - End Month Year)\",\n...\n]\n}",
+        "documentUrls": "={{ $json.fileUri }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -480
+      ],
+      "id": "1c3c729f-a1cd-435e-aa1b-c7750b0a57d7",
+      "name": "Document Analysis",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Ljao62dZBMdAXYlb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Clean up Gemini response and extract JSON\nconst results = [];\n\nfor (const item of $input.all()) {\n  try {\n    // Get the raw Gemini response\n    const geminiResponse = item.json.content.parts[0].text;\n    \n    // More aggressive cleaning for Gemini's format\n    let cleanedResponse = geminiResponse\n      .replace(/```json\\n/g, '')\n      .replace(/\\n```/g, '')\n      .replace(/```/g, '')\n      .replace(/^['\"`]+|['\"`]+$/g, '') // Remove quotes/backticks at start/end\n      .trim();\n    \n    // Handle the \\n escape characters by parsing as JSON string first\n    try {\n      // If it's a JSON string (wrapped in quotes), parse it\n      cleanedResponse = JSON.parse('\"' + cleanedResponse + '\"');\n    } catch (e) {\n      // If that fails, just use the cleaned response as-is\n    }\n    \n    console.log('Final cleaned response:', cleanedResponse); // Debug line\n    \n    // Parse the cleaned JSON\n    const parsedData = JSON.parse(cleanedResponse);\n    \n    \n    // Format for matrix\n    results.push({\n      json: {\n\n        name: parsedData.Name || \"candidateName\",\n        email: parsedData[\"Email address\"] || '',\n        mobile: parsedData[\"Mobile Number\"] || '',\n        qualifications: Array.isArray(parsedData.qualifications) \n          ? '• ' + parsedData.qualifications.join('\\n• ') \n          : parsedData.qualifications,\n        career_history: Array.isArray(parsedData.career_history) \n          ? parsedData.career_history.join('\\n\\n') \n          : parsedData.career_history,\n        comments: '',\n        processed_date: new Date().toISOString(),\n        //raw_gemini_response: geminiResponse, // Keep for debugging\n        //cleaned_response: cleanedResponse // Keep for debugging\n      }\n    });\n  } catch (error) {\n    console.log('Error processing item:', error);\n    console.log('Raw response:', item.json);\n   // console.log('Cleaned response attempt:', cleanedResponse);\n    // Return error info for debugging\n    results.push({\n      json: {\n        error: true,\n        error_message: error.message,\n        raw_response: item.json,\n        cleaned_attempt: cleanedResponse || 'Failed to clean'\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        -480
+      ],
+      "id": "dd4b7fb6-5ae9-4e2d-8e6a-786c54463111",
+      "name": "Clean up JSON Response"
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $json.from }}",
+        "subject": "=Replying to Subject: \"{{ $json.subject }}\"",
+        "bodyContent": "Incorrect request",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        -192
+      ],
+      "id": "9ab08328-538f-4fbc-bf61-0844ffeb3091",
+      "name": "Notify Sender: Incorrect Request",
+      "webhookId": "134de789-6ddf-4f8a-be9a-35c9dbf394cc",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "w0pNpODcl8qcLp6Z",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        592,
+        -480
+      ],
+      "id": "1df2dfea-ea32-4d11-9cc2-4266768f05b7",
+      "name": "CSV converter"
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Microsoft Outlook Trigger').item.json.from }}",
+        "subject": "Generated Matrix",
+        "bodyContent": "=Please find the attached. Replying to {{ $('Microsoft Outlook Trigger').item.json.subject }}\n",
+        "additionalFields": {
+          "attachments": {
+            "attachments": [
+              {
+                "binaryPropertyName": "data"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        800,
+        -480
+      ],
+      "id": "5b6b5bf8-c35d-41b1-80eb-c99a31ff2f40",
+      "name": "Send Matrix to Email Sender",
+      "webhookId": "ebeb0c8f-ac37-43e6-85af-3cb7aa8eb07e",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "w0pNpODcl8qcLp6Z",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Microsoft Outlook Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send Acknowledgement Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Sender: Incorrect Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Acknowledgement Email": {
+      "main": [
+        [
+          {
+            "node": "Fetch Resume from OD - Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Resume from OD - Folder": {
+      "main": [
+        [
+          {
+            "node": "Upload Files - Gemini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Files - Gemini": {
+      "main": [
+        [
+          {
+            "node": "Document Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document Analysis": {
+      "main": [
+        [
+          {
+            "node": "Clean up JSON Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean up JSON Response": {
+      "main": [
+        [
+          {
+            "node": "CSV converter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CSV converter": {
+      "main": [
+        [
+          {
+            "node": "Send Matrix to Email Sender",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4272ced5-2949-45bf-896c-fb687b985da5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cc135a9d75b9f45ba1d9e4b34abb5aa41a7056b606352bf864f3f6a22a28a83c"
+  },
+  "id": "wtaKHbKWX2tZhhKX",
+  "tags": []
+}

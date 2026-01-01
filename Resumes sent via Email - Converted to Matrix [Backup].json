@@ -1,0 +1,238 @@
+{
+  "name": "Resumes sent via Email - Converted to Matrix [Backup]",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "You are a highly precise, detail-oriented resume parser for an HR candidate matrix generator. Your sole function is to extract structured data from the provided documents (resume and cover letter).\n\n**STRICT OUTPUT INSTRUCTIONS:**\n1.  **FORMAT:** Output must be a single block of plain text in valid JSON syntax. **DO NOT** use a code block (```json) or any other markdown formatting.\n2.  **PRECISION:** Match the pattern strictly. **DO NOT** add any extra characters (spaces, newlines, or text) before the opening curly brace `{` or after the closing curly brace `}`.\n3.  **FIELDS:** Populate the following fields exactly, using the cover letter as the primary source for contact details if available, and the resume for professional history:\n    * `Name`: Full name of the candidate.\n    * `Email address`: Candidate's email address.\n    * `Mobile Number`: Candidate's mobile phone number.\n    * `qualifications`: List all formal qualifications, certifications, degrees, and professional credentials, including all associated dates or years.\n    * `career_history`: List all employment positions with the format: \"Company Name - Role Title - Dates\". Use start and end dates/years from the resume.\n\n**Example Output Template (Strictly adhere to this field order and format):**\n{\n\"Name\": \"John Doe\",\n\"Email address\": \"example@xyz.com\",\n\"Mobile Number\": \"04xxxxx\",\n\"qualifications\": [\n\"Qualification Name (Year/Date)\",\n\"Degree, University, (Start Year - End Year)\",\n...\n],\n\"career_history\": [\n\"Company Name - Role Title - (Start Month Year - End Month Year)\",\n...\n]\n}",
+        "documentUrls": "={{ $json.fileUri }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -672
+      ],
+      "id": "4f82ceb1-407b-4d61-8a86-00de687dc1dc",
+      "name": "Analyze document1",
+      "retryOnFail": true,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Ljao62dZBMdAXYlb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Clean up Gemini response and extract JSON\nconst results = [];\n\nfor (const item of $input.all()) {\n  try {\n    // Get the raw Gemini response\n    const geminiResponse = item.json.content.parts[0].text;\n    \n    // More aggressive cleaning for Gemini's format\n    let cleanedResponse = geminiResponse\n      .replace(/```json\\n/g, '')\n      .replace(/\\n```/g, '')\n      .replace(/```/g, '')\n      .replace(/^['\"`]+|['\"`]+$/g, '') // Remove quotes/backticks at start/end\n      .trim();\n    \n    // Handle the \\n escape characters by parsing as JSON string first\n    try {\n      // If it's a JSON string (wrapped in quotes), parse it\n      cleanedResponse = JSON.parse('\"' + cleanedResponse + '\"');\n    } catch (e) {\n      // If that fails, just use the cleaned response as-is\n    }\n    \n    console.log('Final cleaned response:', cleanedResponse); // Debug line\n    \n    // Parse the cleaned JSON\n    const parsedData = JSON.parse(cleanedResponse);\n    \n    \n    // Format for matrix\n    results.push({\n      json: {\n\n        name: parsedData.Name || \"candidateName\",\n        email: parsedData[\"Email address\"] || '',\n        mobile: parsedData[\"Mobile Number\"] || '',\n        qualifications: Array.isArray(parsedData.qualifications) \n          ? '• ' + parsedData.qualifications.join('\\n• ') \n          : parsedData.qualifications,\n        career_history: Array.isArray(parsedData.career_history) \n          ? parsedData.career_history.join('\\n\\n') \n          : parsedData.career_history,\n        comments: '',\n        processed_date: new Date().toISOString(),\n        //raw_gemini_response: geminiResponse, // Keep for debugging\n        //cleaned_response: cleanedResponse // Keep for debugging\n      }\n    });\n  } catch (error) {\n    console.log('Error processing item:', error);\n    console.log('Raw response:', item.json);\n   // console.log('Cleaned response attempt:', cleanedResponse);\n    // Return error info for debugging\n    results.push({\n      json: {\n        error: true,\n        error_message: error.message,\n        raw_response: item.json,\n        cleaned_attempt: cleanedResponse || 'Failed to clean'\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        -672
+      ],
+      "id": "b3a55303-9194-4763-8c1c-a947e1558b8e",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "toRecipients": "={{ $('Microsoft Outlook Trigger').item.json.from }}",
+        "subject": "Generated Matrix",
+        "bodyContent": "=Please find the attached. Replying to {{ $('Microsoft Outlook Trigger').item.json.subject }}\n",
+        "additionalFields": {
+          "attachments": {
+            "attachments": [
+              {
+                "binaryPropertyName": "data"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        -464
+      ],
+      "id": "cb044057-14a7-4cec-8b86-8c2c62c6006f",
+      "name": "Send a message1",
+      "webhookId": "1bd20f38-cc62-48ac-b78a-ad585bfb9175",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "w0pNpODcl8qcLp6Z",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "hasAttachments": true,
+          "readStatus": "both"
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -672
+      ],
+      "id": "affd93d8-9773-48cd-a169-89070d3b31d5",
+      "name": "Microsoft Outlook Trigger",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "w0pNpODcl8qcLp6Z",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1248,
+        -672
+      ],
+      "id": "f4989b67-1cbb-49a9-a899-3be59c78a37e",
+      "name": "File Converter"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "inputType": "binary",
+        "binaryPropertyName": "=data"
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        448,
+        -672
+      ],
+      "id": "026185ef-8b38-4bb9-a063-1ee7d40add5c",
+      "name": "Upload Resumes in Gemini",
+      "retryOnFail": true,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Ljao62dZBMdAXYlb",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract all attachments from Outlook email\nconst inputItem = $input.first();\nconst allBinaries = inputItem.binary;\nconst results = [];\n\n// Loop through all binary properties (attachments)\nfor (const [key, value] of Object.entries(allBinaries)) {\n  if (key.startsWith('attachment_') && \n    (value.mimeType.includes('pdf') || \n     value.mimeType.includes('word') || \n     value.mimeType.includes('document'))) {\n    // Create a new item for each attachment\n    results.push({\n      json: {\n        attachment_name: key,\n        file_name: value.fileName || key,\n        mime_type: value.mimeType,\n        original_email_from: inputItem.json.from,\n        original_email_subject: inputItem.json.subject\n      },\n      binary: {\n        data: value // Keep the binary data\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        -672
+      ],
+      "id": "51fcfc00-7a63-4cef-860d-330886cc75af",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Analyze document1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "File Converter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microsoft Outlook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File Converter": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Resumes in Gemini": {
+      "main": [
+        [
+          {
+            "node": "Analyze document1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Upload Resumes in Gemini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0d76f660-3272-476d-ade9-ee3b68785e11",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cc135a9d75b9f45ba1d9e4b34abb5aa41a7056b606352bf864f3f6a22a28a83c"
+  },
+  "id": "vwnyhCX03vs0Lmra",
+  "tags": []
+}
