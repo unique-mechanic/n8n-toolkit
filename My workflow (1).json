@@ -1,0 +1,795 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        128,
+        -288
+      ],
+      "id": "901c9e07-f411-4109-8976-337b9388a5d6",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        128,
+        -64
+      ],
+      "id": "4329c8d6-40ce-4b33-a2ee-1b4360555fac",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://www.xda-developers.com/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        -288
+      ],
+      "id": "c1c9cd8e-1c42-4f2c-af73-b9354ef7fa3a",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "=Article of the day!\n\n{{ $json.content.parts[0].text }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        -288
+      ],
+      "id": "d34bf29f-152e-481a-873e-2a79ed1bc728",
+      "name": "Discord",
+      "webhookId": "6fe6d65f-8974-41af-b4bb-52484bafd3c5"
+    },
+    {
+      "parameters": {
+        "maxItems": 100
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        576,
+        -288
+      ],
+      "id": "e0940fb4-0028-4220-950e-a5059a8e19ab",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash-latest",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash-latest"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Hello can you help me summarize this!  {{ $json.content }} and give the output as below:\n\nTitle: \"{{ $json.title }}\" \n\nSummarized content: \"summarized content here\"\n\nWritten by: {{ $json.creator }}\n\nArticle Link: {{ $json.guid }} But I don't want image to come embedded\n\nCategories: {{ $json.categories }}\n\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        800,
+        -288
+      ],
+      "id": "e2570e66-9d6a-4db4-8f25-f950e787f4a7",
+      "name": "Message a model"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "event": "folderUpdated"
+      },
+      "type": "n8n-nodes-base.microsoftOneDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        128,
+        160
+      ],
+      "id": "dc3acf03-b0b7-4de4-9bc5-667374f72e39",
+      "name": "Microsoft OneDrive Trigger"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        128,
+        384
+      ],
+      "id": "05b2da92-86ac-4220-8762-cf99afe3896b",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1BdDrT78vNGqGkixcn0e1qVawkhQPbDLv",
+            "mode": "list",
+            "cachedResultName": "Resumes",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1BdDrT78vNGqGkixcn0e1qVawkhQPbDLv"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        352,
+        384
+      ],
+      "id": "a0abb56a-9422-49a0-a3b2-e307de591667",
+      "name": "Search files and folders1"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        576,
+        384
+      ],
+      "id": "ff450adc-9c41-4106-b047-0f3b724301c9",
+      "name": "Download file"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "inputType": "binary"
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        800,
+        384
+      ],
+      "id": "00575bdb-323f-4f5e-8d51-6873e2a45af2",
+      "name": "Upload a file"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "Extract the qualifications and career history from the resume. Format the information as a JSON object with fields mentioned below but DO NOT PUT IT IN A CODING WINDOW - Just a plain text but in JSON syntax. For qualifications and experience, include any associated dates or years. Try to match the pattern strictly without adding any extra text before or after curly braces. Because I need to run JS for this block of output.\n\nExample output: {\n\n\"Name\": \"John Doe\",\n\"Email address\": \"xample@xyz.com\",\n\"Mobile Number\": \"04xxxxx\",\n\n\n  \"qualifications\": [\n    \"Prince 2 Foundations and Practitioner (2021)\",\n    \"ITIL V4 Managing Professional (2021)\",\n    \"ITIL V3 Expert (2011)\",\n    \"Certified Agile Service Manager (2020)\",\n    \"Professional Scrum Master (2020)\",\n    \"Azure Fundamentals (2019)\",\n    \"Graduate Diploma in Information Assurance and Security (2011)\",\n    \"Bachelors in engineering (2006)\"\n  ],\n\n  \"career_history\": [\n    \"Cubic Transportation Systems New Zealand - Manager - IT Operations- New Zealand, NZTA - (May 2023-Present)\",\n    \"Ministry of Business, Innovation and Employment (MBIE) - Principal Operations Advisor ICT/IT Operations Manager- (Dec 2018 - May 2023)\",\n    \"Datacom (Auckland, NZ) - Lead Operations Analyst - (July 2017-Nov 2018)\",\n    \"Telstra (Melbourne, Australia) - Service Delivery Manager - (Jul 2014-Mar 2017)\",\n    \"Optus (Melbourne, Australia) - Service Operations Analyst - (Aug 2008-Jun 2014)\",\n    \"Aviva 24/7 - Technical Analyst - (Jan 2007 to June 2008)\"\n  ]\n}",
+        "documentUrls": "={{ $json.fileUri }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        384
+      ],
+      "id": "4e766fcb-6720-47ce-bb06-4b1759bd1292",
+      "name": "Analyze document"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Clean up Gemini response and extract JSON\nconst results = [];\n\nfor (const item of $input.all()) {\n  try {\n    // Get the raw Gemini response\n    const geminiResponse = item.json.content.parts[0].text;\n    \n    // More aggressive cleaning for Gemini's format\n    let cleanedResponse = geminiResponse\n      .replace(/```json\\n/g, '')\n      .replace(/\\n```/g, '')\n      .replace(/```/g, '')\n      .replace(/^['\"`]+|['\"`]+$/g, '') // Remove quotes/backticks at start/end\n      .trim();\n    \n    // Handle the \\n escape characters by parsing as JSON string first\n    try {\n      // If it's a JSON string (wrapped in quotes), parse it\n      cleanedResponse = JSON.parse('\"' + cleanedResponse + '\"');\n    } catch (e) {\n      // If that fails, just use the cleaned response as-is\n    }\n    \n    console.log('Final cleaned response:', cleanedResponse); // Debug line\n    \n    // Parse the cleaned JSON\n    const parsedData = JSON.parse(cleanedResponse);\n    \n    \n    // Format for matrix\n    results.push({\n      json: {\n\n        name: parsedData.Name || \"candidateName\",\n        email: parsedData[\"Email address\"] || '',\n        mobile: parsedData[\"Mobile Number\"] || '',\n        qualifications: Array.isArray(parsedData.qualifications) \n          ? '• ' + parsedData.qualifications.join('\\n• ') \n          : parsedData.qualifications,\n        career_history: Array.isArray(parsedData.career_history) \n          ? parsedData.career_history.join('\\n\\n') \n          : parsedData.career_history,\n        comments: '',\n        processed_date: new Date().toISOString(),\n        //raw_gemini_response: geminiResponse, // Keep for debugging\n        //cleaned_response: cleanedResponse // Keep for debugging\n      }\n    });\n  } catch (error) {\n    console.log('Error processing item:', error);\n    console.log('Raw response:', item.json);\n   // console.log('Cleaned response attempt:', cleanedResponse);\n    // Return error info for debugging\n    results.push({\n      json: {\n        error: true,\n        error_message: error.message,\n        raw_response: item.json,\n        cleaned_attempt: cleanedResponse || 'Failed to clean'\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        384
+      ],
+      "id": "7525a2e6-e961-41ed-8967-128f8086696e",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1472,
+        384
+      ],
+      "id": "32178aff-341a-474f-afd1-4c5ae70cf71e",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "name": "Results",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1yjISWNq7fR_PTB4MAnJEj3hW_bmJibnn",
+          "mode": "list",
+          "cachedResultName": "Exported",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1yjISWNq7fR_PTB4MAnJEj3hW_bmJibnn"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1696,
+        384
+      ],
+      "id": "d5586291-f9c7-487f-b8b1-4f1da3fd7d5c",
+      "name": "Upload file"
+    }
+  ],
+  "pinData": {
+    "Limit": [
+      {
+        "json": {
+          "creator": "Parth Shah",
+          "title": "I use this free open-source app to share files between phones and PCs and it’s awesome",
+          "link": "https://www.xda-developers.com/use-free-open-source-app-share-files-between-phones-pcs/",
+          "pubDate": "Wed, 20 Aug 2025 02:00:21 GMT",
+          "content:encoded": "\n                                                                                                                                    <p>Are you tired of wrestling with email attachments and slow cloud services just to share a few files between your phone and a computer? You are not alone. I have been there, and that’s why I’m excited to share a tool that completely changed the game for me: LocalSend. It’s a free and open-source application that makes sharing files with nearby devices simple. It’s like a cross-platform AirDrop that works on all the operating systems.</p>                    ",
+          "content:encodedSnippet": "Are you tired of wrestling with email attachments and slow cloud services just to share a few files between your phone and a computer? You are not alone. I have been there, and that’s why I’m excited to share a tool that completely changed the game for me: LocalSend. It’s a free and open-source application that makes sharing files with nearby devices simple. It’s like a cross-platform AirDrop that works on all the operating systems.",
+          "enclosure": {
+            "url": "https://static1.xdaimages.com/wordpress/wp-content/uploads/wm/2025/08/using-localsend-to-share-files.jpg",
+            "length": "3154",
+            "type": "image/jpeg"
+          },
+          "dc:creator": "Parth Shah",
+          "content": "\n                                            Discover LocalSend, a free and open-source app that makes sharing files between phones and PCs simple, fast, and secure. Say goodbye to slow cloud services and hello to seamless file transfers.\n                                        ",
+          "contentSnippet": "Discover LocalSend, a free and open-source app that makes sharing files between phones and PCs simple, fast, and secure. Say goodbye to slow cloud services and hello to seamless file transfers.",
+          "guid": "https://www.xda-developers.com/use-free-open-source-app-share-files-between-phones-pcs/",
+          "categories": [
+            "Productivity",
+            "LocalSend"
+          ],
+          "isoDate": "2025-08-20T02:00:21.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Samarveer Singh",
+          "title": "6 classic games my elder brother helped me beat as a kid",
+          "link": "https://www.xda-developers.com/classic-games-i-needed-my-elder-brother-to-help-with/",
+          "pubDate": "Wed, 20 Aug 2025 01:00:10 GMT",
+          "content:encoded": "\n                                                                                                                                    <p>Picture this — you're about 16 years old in the mid-2000s. You're either studying for a math exam, or getting ready to head out to the movies with friends, and the most constant interruption you face isn't the landline ringing or mom calling you for tea.</p>                    ",
+          "content:encodedSnippet": "Picture this — you're about 16 years old in the mid-2000s. You're either studying for a math exam, or getting ready to head out to the movies with friends, and the most constant interruption you face isn't the landline ringing or mom calling you for tea.",
+          "enclosure": {
+            "url": "https://static1.xdaimages.com/wordpress/wp-content/uploads/2025/08/classics-i-couldnt-beat-as-a-kid.jpg",
+            "length": "421",
+            "type": "image/jpeg"
+          },
+          "dc:creator": "Samarveer Singh",
+          "content": "\n                                            Before the age of walkthroughs and YouTube guides, I only had my brother to turn to when I couldn't get past bosses or missions in these games.\n                                        ",
+          "contentSnippet": "Before the age of walkthroughs and YouTube guides, I only had my brother to turn to when I couldn't get past bosses or missions in these games.",
+          "guid": "https://www.xda-developers.com/classic-games-i-needed-my-elder-brother-to-help-with/",
+          "categories": [
+            "Gaming",
+            "Retro Gaming",
+            "PC",
+            "Nintendo"
+          ],
+          "isoDate": "2025-08-20T01:00:10.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Mahnoor Faisal",
+          "title": "If you have this \"verified\" Chrome extension installed, you need to delete it immediately",
+          "link": "https://www.xda-developers.com/delete-free-vpn-one-extension/",
+          "pubDate": "Wed, 20 Aug 2025 00:59:52 GMT",
+          "content:encoded": "\n                                                                                                                                    <p>Though there's no telling if a Chrome extension is really entirely safe, anyone could fall for an extension with a verified badge on the Chrome Web Store, promising reviews and over a hundred thousand installs. Unfortunately, an extension that fits exactly this description reportedly captures screenshots of users’ screens without their knowledge.</p>                    ",
+          "content:encodedSnippet": "Though there's no telling if a Chrome extension is really entirely safe, anyone could fall for an extension with a verified badge on the Chrome Web Store, promising reviews and over a hundred thousand installs. Unfortunately, an extension that fits exactly this description reportedly captures screenshots of users’ screens without their knowledge.",
+          "enclosure": {
+            "url": "https://static1.xdaimages.com/wordpress/wp-content/uploads/wm/2024/09/samsung-galaxy-chromebook-plus-930.jpg",
+            "length": "1142",
+            "type": "image/jpeg"
+          },
+          "dc:creator": "Mahnoor Faisal",
+          "content": "\n                                            Make sure you delete this Chrome extension before it spies on you. \n                                        ",
+          "contentSnippet": "Make sure you delete this Chrome extension before it spies on you.",
+          "guid": "https://www.xda-developers.com/delete-free-vpn-one-extension/",
+          "categories": [
+            "Software and Services",
+            "chrome",
+            "Free VPNs",
+            "extension"
+          ],
+          "isoDate": "2025-08-20T00:59:52.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Joe Rice-Jones",
+          "title": "5 VLAN mistakes I keep seeing people make",
+          "link": "https://www.xda-developers.com/recurring-vlan-mistakes/",
+          "pubDate": "Wed, 20 Aug 2025 00:00:10 GMT",
+          "content:encoded": "\n                                                                                                                                    <p>Setting up virtual local area networks or <a href=\"https://www.xda-developers.com/things-you-need-to-know-before-setting-up-vlans-on-your-home-network/\" target=\"_blank\">VLANs in your home network</a> or home lab makes management of your network easier. You can use one <span class=\"display-card-hyperlink-article\" data-id=\"1017893\"><a href=\"/securely-share-guest-wi-fi-with-friends/\" target=\"_blank\">as a guest network</a></span> to share your internet connection with friends, separate off noisy devices like smart TVs, and <a href=\"https://www.xda-developers.com/lans-finally-fixed-my-smart-home-headaches/\" target=\"_blank\">keep IoT devices</a> on their network so they don't interfere with the devices that need low-latency connections. VLANs aren't challenging to set up or use, but <a href=\"https://www.xda-developers.com/mistakes-made-when-setting-up-vlans/\" target=\"_blank\">I've made several missteps</a> along the way and seen plenty more on other people's networks. The most common tend to be the easiest to fix, so let's run through what those are.</p>                    ",
+          "content:encodedSnippet": "Setting up virtual local area networks or VLANs in your home network or home lab makes management of your network easier. You can use one as a guest network to share your internet connection with friends, separate off noisy devices like smart TVs, and keep IoT devices on their network so they don't interfere with the devices that need low-latency connections. VLANs aren't challenging to set up or use, but I've made several missteps along the way and seen plenty more on other people's networks. The most common tend to be the easiest to fix, so let's run through what those are.",
+          "enclosure": {
+            "url": "https://static1.xdaimages.com/wordpress/wp-content/uploads/wm/2024/11/close-in-network-switch.jpg",
+            "length": "1081",
+            "type": "image/jpeg"
+          },
+          "dc:creator": "Joe Rice-Jones",
+          "content": "\n                                            Learn about the top 5 VLAN setup errors, including native VLAN issues, incorrect port assignments, missing management VLANs, and more. Follow best practices to avoid these pitfalls.\n                                        ",
+          "contentSnippet": "Learn about the top 5 VLAN setup errors, including native VLAN issues, incorrect port assignments, missing management VLANs, and more. Follow best practices to avoid these pitfalls.",
+          "guid": "https://www.xda-developers.com/recurring-vlan-mistakes/",
+          "categories": [
+            "Networking",
+            "network"
+          ],
+          "isoDate": "2025-08-20T00:00:10.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Timi Cantisano",
+          "title": "Score the WD BLACK SN850X 2TB SSD for less as it drops to $130",
+          "link": "https://www.xda-developers.com/wd-black-2tb-sn850x-130-deal/",
+          "pubDate": "Tue, 19 Aug 2025 23:48:10 GMT",
+          "content:encoded": "\n                                                                                                                                    <p>This is one of those drives that doesn't fail to deliver. You're getting awesome speed, mixed with great reliability from a brand that's been in the business for quite some time. The best part about all of this is that the WD BLACK SN850X 2TB SSD is now down to one of its best prices of the year, coming in with a steep $60 discount, which brings it down to just $130. This is one of the cheapest prices we've seen this year for this SSD, so grab it now while you can. </p>                    ",
+          "content:encodedSnippet": "This is one of those drives that doesn't fail to deliver. You're getting awesome speed, mixed with great reliability from a brand that's been in the business for quite some time. The best part about all of this is that the WD BLACK SN850X 2TB SSD is now down to one of its best prices of the year, coming in with a steep $60 discount, which brings it down to just $130. This is one of the cheapest prices we've seen this year for this SSD, so grab it now while you can.",
+          "enclosure": {
+            "url": "https://static1.xdaimages.com/wordpress/wp-content/uploads/2024/10/169-6.png",
+            "length": "2325",
+            "type": "image/jpeg"
+          },
+          "dc:creator": "Timi Cantisano",
+          "content": "\n                                            Grab this top-tier SSD at an unbeatable price\n                                        ",
+          "contentSnippet": "Grab this top-tier SSD at an unbeatable price",
+          "guid": "https://www.xda-developers.com/wd-black-2tb-sn850x-130-deal/",
+          "categories": [
+            "Storage",
+            "WD BLACK SN850X 2TB SSD"
+          ],
+          "isoDate": "2025-08-19T23:48:10.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Simon Batt",
+          "title": "Excel is getting a new feature that lets you just explain what formula you want",
+          "link": "https://www.xda-developers.com/excel-new-feature-explain-formula/",
+          "pubDate": "Tue, 19 Aug 2025 23:41:11 GMT",
+          "content:encoded": "\n                                                                                                                                    <p>Sometimes you just want to tell Excel what it is you want your formula to do. It'd be a lot easier if you could just say \"sort this data in ascending order and find its average\" instead of messing around with cells. However, for the longest time, you either had to learn how to turn that sentence into code or tell someone else to do it instead.</p>                    ",
+          "content:encodedSnippet": "Sometimes you just want to tell Excel what it is you want your formula to do. It'd be a lot easier if you could just say \"sort this data in ascending order and find its average\" instead of messing around with cells. However, for the longest time, you either had to learn how to turn that sentence into code or tell someone else to do it instead.",
+          "enclosure": {
+            "url": "https://static1.xdaimages.com/wordpress/wp-content/uploads/wm/2025/07/jupyter-on-excel-featured.jpg",
+            "length": "5563",
+            "type": "image/jpeg"
+          },
+          "dc:creator": "Simon Batt",
+          "content": "\n                                            When you just want to tell the software to \"do it\" already.\n                                        ",
+          "contentSnippet": "When you just want to tell the software to \"do it\" already.",
+          "guid": "https://www.xda-developers.com/excel-new-feature-explain-formula/",
+          "categories": [
+            "Software and Services",
+            "Microsoft Excel"
+          ],
+          "isoDate": "2025-08-19T23:41:11.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Joe Rice-Jones",
+          "title": "Smart plugs are the best thing in my smart home",
+          "link": "https://www.xda-developers.com/power-monitoring-smart-plugs-superpower/",
+          "pubDate": "Tue, 19 Aug 2025 23:00:10 GMT",
+          "content:encoded": "\n                                                                                                                                    <p>While the smart home is <a href=\"https://www.xda-developers.com/smart-home-devices-that-actually-add-value-not-just-complexity/\" target=\"_blank\">packed with handy devices,</a> not all are as easy to start with as the humble <a href=\"https://www.xda-developers.com/this-smart-plug-is-an-underrated-part-of-my-home-lab/\" target=\"_blank\">smart plug</a>. These mainstays of the smart home are inexpensive, provide smarts to dumb appliances, and can be controlled from your smartphone or sometimes from a voice assistant. While many plug into your existing sockets, they sometimes come as socket replacements for a more streamlined look. The better models offer power monitoring, API access, and the ability to trigger automations. And yes, they <em>can</em><a href=\"https://www.xda-developers.com/home-lab-tweaks-that-save-my-electricity-bill-from-ruin/\" target=\"_blank\">save you money on your power bill</a>, but that's a happy by-product in my eyes, because they can do so much more.</p>                    ",
+          "content:encodedSnippet": "While the smart home is packed with handy devices, not all are as easy to start with as the humble smart plug. These mainstays of the smart home are inexpensive, provide smarts to dumb appliances, and can be controlled from your smartphone or sometimes from a voice assistant. While many plug into your existing sockets, they sometimes come as socket replacements for a more streamlined look. The better models offer power monitoring, API access, and the ability to trigger automations. And yes, they cansave you money on your power bill, but that's a happy by-product in my eyes, because they can do so much more.",
+          "enclosure": {
+            "url": "https://static1.xdaimages.com/wordpress/wp-content/uploads/wm/2025/05/tcp-smart-plug-home-assistant.jpg",
+            "length": "628",
+            "type": "image/jpeg"
+          },
+          "dc:creator": "Joe Rice-Jones",
+          "content": "\n                                            I love my smart home, and the humble smart plug is one of the best things in it\n                                        ",
+          "contentSnippet": "I love my smart home, and the humble smart plug is one of the best things in it",
+          "guid": "https://www.xda-developers.com/power-monitoring-smart-plugs-superpower/",
+          "categories": [
+            "Other Hardware",
+            "Smart Home"
+          ],
+          "isoDate": "2025-08-19T23:00:10.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Timi Cantisano",
+          "title": "Score $150 off the Toshiba N300 Pro 24TB NAS HDD",
+          "link": "https://www.xda-developers.com/toshiba-24tb-n300-pro-400-deal/",
+          "pubDate": "Tue, 19 Aug 2025 22:33:38 GMT",
+          "content:encoded": "\n                                                                                                                                    <p>As our data collection grows, it's become even more important to find a proper way to store it all. And while some prefer to store their data in the cloud, others prefer a more hands-on approach with a <a href=\"https://www.xda-developers.com/the-drive-nas/\" target=\"_blank\">local solution like NAS</a>, DAS, or portable storage drive. Well, if you've been thinking about setting up a NAS of your own, or already have one and need to add more storage, this 24TB HDD is going to be a great way to go. The Toshiba N300 Pro is a fantastic performer and is now $150 below retail, coming in at $400 for a limited time. </p>                    ",
+          "content:encodedSnippet": "As our data collection grows, it's become even more important to find a proper way to store it all. And while some prefer to store their data in the cloud, others prefer a more hands-on approach with a local solution like NAS, DAS, or portable storage drive. Well, if you've been thinking about setting up a NAS of your own, or already have one and need to add more storage, this 24TB HDD is going to be a great way to go. The Toshiba N300 Pro is a fantastic performer and is now $150 below retail, coming in at $400 for a limited time.",
+          "enclosure": {
+            "url": "https://static1.xdaimages.com/wordpress/wp-content/uploads/2025/08/copy-of-169-11.png",
+            "length": "1714",
+            "type": "image/jpeg"
+          },
+          "dc:creator": "Timi Cantisano",
+          "content": "\n                                            Score $150 off retail for a limited time\n                                        ",
+          "contentSnippet": "Score $150 off retail for a limited time",
+          "guid": "https://www.xda-developers.com/toshiba-24tb-n300-pro-400-deal/",
+          "categories": [
+            "Storage",
+            "Toshiba N300 PRO",
+            "NAS"
+          ],
+          "isoDate": "2025-08-19T22:33:38.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Ayush Pande",
+          "title": "I upscale my old photos with a local image model, here's how",
+          "link": "https://www.xda-developers.com/i-upscale-my-old-photos-with-a-local-image-model/",
+          "pubDate": "Tue, 19 Aug 2025 22:00:10 GMT",
+          "content:encoded": "\n                                                                                                                                    <p>Despite tech giants rushing to incorporate artificial intelligence into their products, AI features usually leave a lot to be desired – and it’s gotten to the point where I’d just groan every time a new app developer or hardware manufacturer touts LLM-powered facilities as the next big thing. That said, there are a couple of examples where AI tools can be surprisingly effective, with <a href=\"https://www.xda-developers.com/everything-notebook-in-notebooklm/\" target=\"_blank\">NotebookLM</a> being a prime example of how artificial intelligence can simplify complex tasks.</p>                    ",
+          "content:encodedSnippet": "Despite tech giants rushing to incorporate artificial intelligence into their products, AI features usually leave a lot to be desired – and it’s gotten to the point where I’d just groan every time a new app developer or hardware manufacturer touts LLM-powered facilities as the next big thing. That said, there are a couple of examples where AI tools can be surprisingly effective, with NotebookLM being a prime example of how artificial intelligence can simplify complex tasks.",
+          "enclosure": {
+            "url": "https://static1.xdaimages.com/wordpress/wp-content/uploads/wm/2025/08/comfyui-7.jpg",
+            "length": "3581",
+            "type": "image/jpeg"
+          },
+          "dc:creator": "Ayush Pande",
+          "content": "\n                                            Locally-hosted image upscalers are surprisingly good at enhancing low-resolution images\n                                        ",
+          "contentSnippet": "Locally-hosted image upscalers are surprisingly good at enhancing low-resolution images",
+          "guid": "https://www.xda-developers.com/i-upscale-my-old-photos-with-a-local-image-model/",
+          "categories": [
+            "Software and Services",
+            "ai"
+          ],
+          "isoDate": "2025-08-19T22:00:10.000Z"
+        }
+      },
+      {
+        "json": {
+          "creator": "Jeff Butts",
+          "title": "5 applications I've deployed on my Raspberry Pi with K3s",
+          "link": "https://www.xda-developers.com/applications-deployed-raspberry-pi-k3s/",
+          "pubDate": "Tue, 19 Aug 2025 21:00:10 GMT",
+          "content:encoded": "\n                                                                                                                                    <p>Running <a href=\"https://www.xda-developers.com/reasons-mini-kubernetes-cluster-raspberry-pi/\" target=\"_blank\">K3s on a Raspberry Pi</a> has been one of the most rewarding projects I’ve tried in my home lab. The lightweight nature of K3s makes it perfect for a <a href=\"https://www.xda-developers.com/built-pi-powered-kubernetes-cluster/\" target=\"_blank\">Raspberry Pi cluster</a>, and it allows me to run applications in a way that is both resilient and easy to manage. Over time, I’ve experimented with <a href=\"https://www.xda-developers.com/kubernetes-cluster-raspberry-pi-guide/\" target=\"_blank\">several different workloads</a>, and some of them have become permanent fixtures in my setup. Here are five of the most useful applications I’ve deployed.</p>                    ",
+          "content:encodedSnippet": "Running K3s on a Raspberry Pi has been one of the most rewarding projects I’ve tried in my home lab. The lightweight nature of K3s makes it perfect for a Raspberry Pi cluster, and it allows me to run applications in a way that is both resilient and easy to manage. Over time, I’ve experimented with several different workloads, and some of them have become permanent fixtures in my setup. Here are five of the most useful applications I’ve deployed.",
+          "enclosure": {
+            "url": "https://static1.xdaimages.com/wordpress/wp-content/uploads/wm/2025/07/grafana-loki-prometheus-feature.jpg",
+            "length": "10418",
+            "type": "image/jpeg"
+          },
+          "dc:creator": "Jeff Butts",
+          "content": "\n                                            You might be surprised at the versatility of K3s in bringing practical services to life on a Raspberry Pi.\n                                        ",
+          "contentSnippet": "You might be surprised at the versatility of K3s in bringing practical services to life on a Raspberry Pi.",
+          "guid": "https://www.xda-developers.com/applications-deployed-raspberry-pi-k3s/",
+          "categories": [
+            "Single-Board Computers",
+            "Raspberry Pi",
+            "Home Lab",
+            "K3s"
+          ],
+          "isoDate": "2025-08-19T21:00:10.000Z"
+        }
+      }
+    ],
+    "Message a model": [
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "Title: \"I use this free open-source app to share files between phones and PCs and it’s awesome\"\n\nSummarized content: LocalSend is a free and open-source application offering fast and secure file transfers between phones and PCs, eliminating the need for slow cloud services.  It provides a seamless file-sharing experience.\n\nWritten by: Parth Shah\n\nArticle Link: https://www.xda-developers.com/use-free-open-source-app-share-files-between-phones-pcs/\n\nCategories: Productivity, LocalSend\n"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "avgLogprobs": -0.021389971431503948
+        }
+      },
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "Title: \"6 classic games my elder brother helped me beat as a kid\"\n\nSummarized content:  Before the readily available online walkthroughs and video guides of today, the author relied on his older brother for help conquering challenging bosses and missions in classic video games.  The article details six specific games where his brother's assistance proved invaluable.\n\nWritten by: Samarveer Singh\n\nArticle Link: https://www.xda-developers.com/classic-games-i-needed-my-elder-brother-to-help-with/\n\nCategories: Gaming, Retro Gaming, PC, Nintendo\n"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "avgLogprobs": -0.018378823753294905
+        }
+      },
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "Title: \"If you have this \"verified\" Chrome extension installed, you need to delete it immediately\"\n\nSummarized content: A Chrome extension called \"Free VPN One\" is being flagged as malicious spyware.  Users who have installed this extension should remove it immediately to prevent potential privacy violations.\n\nWritten by: Mahnoor Faisal\n\nArticle Link: https://www.xda-developers.com/delete-free-vpn-one-extension/\n\nCategories: Software and Services, chrome, Free VPNs, extension\n"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "avgLogprobs": -0.08719805951388378
+        }
+      },
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "Title: \"5 VLAN Mistakes I Keep Seeing People Make\"\n\nSummarized content: This article details five common mistakes when setting up VLANs (Virtual Local Area Networks):  problems with the native VLAN, incorrect port assignments, missing management VLANs, and other unspecified errors.  It emphasizes learning from these pitfalls and following best practices to avoid them.\n\nWritten by: Joe Rice-Jones\n\nArticle Link: https://www.xda-developers.com/recurring-vlan-mistakes/\n\nCategories: Networking, network\n"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "avgLogprobs": -0.1549441859407245
+        }
+      },
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "Title: \"Score the WD BLACK SN850X 2TB SSD for less as it drops to $130\"\n\nSummarized content: The WD BLACK SN850X 2TB NVMe SSD is currently on sale for $130, a significant price drop making this high-performance drive more affordable.  This deal offers excellent value for users needing fast storage upgrades.\n\nWritten by: Timi Cantisano\n\nArticle Link: https://www.xda-developers.com/wd-black-2tb-sn850x-130-deal/\n\nCategories: Storage, WD BLACK SN850X 2TB SSD\n"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "avgLogprobs": -0.04141144411904471
+        }
+      },
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "Title: \"Excel is getting a new feature that lets you just explain what formula you want\"\n\nSummarized content: Microsoft Excel is adding a new feature that allows users to describe the desired formula in natural language, rather than writing the formula itself.  The software will then attempt to generate the correct formula based on the user's explanation.  This simplifies the process of creating complex formulas, making Excel more accessible to users less familiar with its syntax.\n\nWritten by: Simon Batt\n\nArticle Link: https://www.xda-developers.com/excel-new-feature-explain-formula/\n\nCategories: Software and Services, Microsoft Excel\n"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "avgLogprobs": -0.07249486355381157
+        }
+      },
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "Title: \"Smart plugs are the best thing in my smart home\"\n\nSummarized content: The author loves their smart home and considers smart plugs to be its best feature.  (Further detail could be added if more of the article was provided).\n\nWritten by: Joe Rice-Jones\n\nArticle Link: https://www.xda-developers.com/power-monitoring-smart-plugs-superpower/\n\nCategories: Other Hardware, Smart Home\n"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "avgLogprobs": -0.08687090873718262
+        }
+      },
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "Title: \"Score $150 off the Toshiba N300 Pro 24TB NAS HDD\"\n\nSummarized content:  For a limited time, you can get $150 off the retail price of the Toshiba N300 Pro 24TB NAS HDD.  This deal offers significant savings on a high-capacity hard drive designed for network-attached storage (NAS) systems.\n\nWritten by: Timi Cantisano\n\nArticle Link: https://www.xda-developers.com/toshiba-24tb-n300-pro-400-deal/\n\nCategories: Storage, Toshiba N300 PRO, NAS\n"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "avgLogprobs": -0.059527092791618184
+        }
+      },
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "Ayush Pande's XDA Developers article, \"I upscale my old photos with a local image model, here's how,\" demonstrates the surprisingly effective results achievable using locally-hosted AI models for image upscaling.  The article details the process and showcases the improved quality of upscaled photos.\n"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "avgLogprobs": -0.05961148585042646
+        }
+      },
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "Title: \"5 applications I've deployed on my Raspberry Pi with K3s\"\n\nSummarized content: This article details five practical applications successfully deployed on a Raspberry Pi using the lightweight Kubernetes distribution, K3s.  The author, Jeff Butts, demonstrates the versatility of K3s for running various services on a resource-constrained device like the Raspberry Pi.  Specific applications are not listed in the summary to maintain intrigue.\n\nWritten by: Jeff Butts\n\nArticle Link: https://www.xda-developers.com/applications-deployed-raspberry-pi-k3s/\n\nCategories: Single-Board Computers, Raspberry Pi, Home Lab, K3s\n"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "avgLogprobs": -0.06383300342148157
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders1": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Upload a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file": {
+      "main": [
+        [
+          {
+            "node": "Analyze document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze document": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7f5e5c6c-ebeb-4bdc-b99b-c3d10ef89aec",
+  "meta": {
+    "instanceId": "cc135a9d75b9f45ba1d9e4b34abb5aa41a7056b606352bf864f3f6a22a28a83c"
+  },
+  "id": "A4q5p2ZxoB9nTkHx",
+  "tags": []
+}
